@@ -2,9 +2,6 @@ const axios = require('axios');
 const cheerio = require("cheerio");
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
-const PostPublisher = require('./postpublisher.js');
-
-const pustPublisher = new PostPublisher();
 
 class PostCreator {
 
@@ -166,4 +163,3 @@ class PostCreator {
 }
 
 module.exports = PostCreator;
-

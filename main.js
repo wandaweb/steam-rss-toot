@@ -1,8 +1,9 @@
 const axios = require('axios');
 const { XMLParser, XMLBuilder, XMLValidator } = require('fast-xml-parser');
+const fs = require('fs');
 const LocalData = require('./localdata.js');
 const PostCreator = require('./postcreator.js');
-const fs = require('fs');
+const PostPublisher = require('./postpublisher.js');
 
 const MAX_POST_LENGTH = 500;
 const MAX_DESCRIPTION_LENGTH = 250;
@@ -10,6 +11,7 @@ const MAX_DESCRIPTION_LENGTH = 250;
 const parser = new XMLParser();
 const local = new LocalData();
 const postCreator = new PostCreator(MAX_POST_LENGTH, MAX_DESCRIPTION_LENGTH);
+const postPublisher = new PostPublisher();
 
 setInterval(getFeed, 10 * 60 * 1000);
 setInterval(local.cleanUpPostList, 48 * 60 * 60 * 1000);
@@ -57,9 +59,9 @@ async function getFeed() {
                         var localPath = await postCreator.createImage(post.imagePath);
                         // upload the image
                         if (localPath) {
-                            var imageId = await postCreator.uploadImage(localPath);
+                            var imageId = await postPublisher.uploadImage(localPath);
                             console.log("posting image: " + imageId);
-                            var response = await postCreator.postToMastodon(post.postText, imageId);
+                            var response = await postPublisher.postToMastodon(post.postText, imageId);
                             if (response.data && response.data.id) {
                                 posted = true;
                                 console.log("Posted with image");
@@ -67,7 +69,7 @@ async function getFeed() {
                         }
                     }
                     if (!posted) {
-                        var response = await postCreator.postToMastodon(post.postText);
+                        var response = await postPublisher.postToMastodon(post.postText);
                         console.log(response);
                         console.log("posted without an image")
                     }
