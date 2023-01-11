@@ -24,7 +24,6 @@ async function getFeed() {
         if (response && response.data) {
             var XMLData = response.data;
             var feed = parser.parse(XMLData);
-            fs.writeFile("output.json", JSON.stringify(feed), (e) => { }); 
             var articleArray = feed.rss.channel.item;
             console.log("number of articles: " + articleArray.length)
             for (var i = 0; i < articleArray.length; i++) {
