@@ -11,15 +11,20 @@ const MAX_DESCRIPTION_LENGTH = 250;
 const parser = new XMLParser();
 const local = new LocalData();
 const postCreator = new PostCreator(MAX_POST_LENGTH, MAX_DESCRIPTION_LENGTH);
-const postPublisher = new PostPublisher();
 
-setInterval(getFeed, 10 * 60 * 1000);
-setInterval(local.cleanUpPostList, 48 * 60 * 60 * 1000);
+var M;
 
-getFeed();
+PostPublisher.mastodon().then((mastodon)=>{
+    M = mastodon;
+    getFeed()
+    setInterval(getFeed, 10 * 60 * 1000);
+    setInterval(local.cleanUpPostList, 48 * 60 * 60 * 1000);
+});
 
 async function getFeed() {
     try {
+        //var M = await PostPublisher.mastodon();
+        var postPublisher = new PostPublisher.PostPublisher(M);
         var response = await axios.get('https://store.steampowered.com/feeds/news/');
         if (response && response.data) {
             var XMLData = response.data;
@@ -49,6 +54,7 @@ async function getFeed() {
                     console.log(guid);
 
                     // create post
+                    
                     var post = await postCreator.createPost(title, link, description);
 
                     // if the post has an image, download it
@@ -61,7 +67,7 @@ async function getFeed() {
                             var imageId = await postPublisher.uploadImage(localPath);
                             console.log("posting image: " + imageId);
                             var response = await postPublisher.postToMastodon(post.postText, imageId);
-                            if (response.data && response.data.id) {
+                            if (response && response.id) {
                                 posted = true;
                                 console.log("Posted with image");
                             }

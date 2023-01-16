@@ -1,28 +1,55 @@
 
 const fs = require('fs');
-const Mastodon = require('mastodon-api');
+const { login } = require('masto');
 
-const M = new Mastodon(getKeys());
+const mastodon = async function () {
+    var masto;
+    try {
+        masto = await login(getKeys());
+    } catch (err) {
+        console.error("Error signing into Mastodon. " + err);
+    }
+    return masto;
+}
 
 function getKeys() {
-    var keys = fs.readFileSync('keys.json');
-    var config = JSON.parse(keys);
-    return config;
+    var keys, config;
+    try {
+        keys = fs.readFileSync('keys.json');
+        config = JSON.parse(keys);
+        return {
+            url: config.api_url,
+            accessToken: config.access_token
+        };
+    } catch (err) {
+        console.log("Error reading keys file: " + err);
+    }
+    return null;
 }
 
 class PostPublisher {
-    constructor() { }
+    constructor(masto) {
+        this.M = masto;
+        console.log(this.M)
+    }
 
     postToMastodon = async (post, image = null) => {
         if (image) {
             try {
-                return await M.post('statuses', { status: post, media_ids: [image] });
+                return await this.M.v1.statuses.create({
+                    status: post,
+                    visibility: 'public',
+                    mediaIds: [image],
+                });
             } catch (err) {
                 console.error("Error tooting with an image: " + err);
             }
         } else {
             try {
-                return await M.post('statuses', { status: post });
+                return await this.M.v1.statuses.create({
+                    status: post,
+                    visibility: 'public'
+                });
             } catch (err) {
                 console.error("Error tooting plain text: " + err);
             }
@@ -35,16 +62,19 @@ class PostPublisher {
             return null;
         }
         try {
-            var response = await M.post('media', { file: fs.createReadStream(path) });
-            console.log("Image id is " + response.data.id);
+            var response = await this.M.v2.mediaAttachments.create({
+                file: fs.readFileSync(path),
+                description: 'coffee',
+            });
+            console.log("Image id is " + response.id);
             fs.unlink(path, (err) => {
                 if (err) console.error("Error deleting file: " + err)
             });
-            return response.data.id;
+            return response.id;
         } catch (err) {
             console.error("Error uploading image: " + err);
         }
     }
 }
 
-module.exports = PostPublisher;
+module.exports = { PostPublisher, mastodon };

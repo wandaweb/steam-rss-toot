@@ -12,7 +12,7 @@
     "axios": "^1.2.2",
     "cheerio": "^1.0.0-rc.12",
     "fast-xml-parser": "^4.0.13",
-    "mastodon-api": "^1.3.0",
+    "masto": "^5.4.0",
     "sharp": "^0.31.3",
     "uuid": "^9.0.0"
   }
