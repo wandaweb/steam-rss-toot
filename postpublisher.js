@@ -4,7 +4,7 @@ const { login } = require('masto');
 
 /**
  * Creates an instance of the Mastodon client by using data in the 'keys.json' file
- * @returns mastodon client
+ * @returns {Client} mastodon client
  */
 const mastodon = async function () {
     var masto;
