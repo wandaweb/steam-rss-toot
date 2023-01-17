@@ -1,6 +1,5 @@
 const axios = require('axios');
-const { XMLParser, XMLBuilder, XMLValidator } = require('fast-xml-parser');
-const fs = require('fs');
+const { XMLParser } = require('fast-xml-parser');
 const LocalData = require('./localdata.js');
 const PostCreator = require('./postcreator.js');
 const PostPublisher = require('./postpublisher.js');
@@ -23,14 +22,12 @@ PostPublisher.mastodon().then((mastodon)=>{
 
 async function getFeed() {
     try {
-        //var M = await PostPublisher.mastodon();
         var postPublisher = new PostPublisher.PostPublisher(M);
         var response = await axios.get('https://store.steampowered.com/feeds/news/');
         if (response && response.data) {
             var XMLData = response.data;
             var feed = parser.parse(XMLData);
             var articleArray = feed.rss.channel.item;
-            console.log("number of articles: " + articleArray.length)
             for (var i = 0; i < articleArray.length; i++) {
                 var article = articleArray[i];
                 var title = article.title;
@@ -53,19 +50,18 @@ async function getFeed() {
                     await local.addPost(guid, date);
                     console.log(guid);
 
-                    // create post
-                    
+                    // create the post
                     var post = await postCreator.createPost(title, link, description);
 
                     // if the post has an image, download it
                     var posted = false;
                     if (post.imagePath) {
-                        console.log("uploading image: " + post.imagePath);
+                        console.log("Uploading image: " + post.imagePath);
                         var localPath = await postCreator.createImage(post.imagePath);
                         // upload the image
                         if (localPath) {
                             var imageId = await postPublisher.uploadImage(localPath);
-                            console.log("posting image: " + imageId);
+                            console.log("Posting image: " + imageId);
                             var response = await postPublisher.postToMastodon(post.postText, imageId);
                             if (response && response.id) {
                                 posted = true;
@@ -76,12 +72,12 @@ async function getFeed() {
                     if (!posted) {
                         var response = await postPublisher.postToMastodon(post.postText);
                         console.log(response);
-                        console.log("posted without an image")
+                        console.log("Posted without an image")
                     }
 
 
                 } else {
-                    console.log("already posted");
+                    console.log("Already posted");
                 }
                 delay(1000)
 

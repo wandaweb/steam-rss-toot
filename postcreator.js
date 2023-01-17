@@ -20,7 +20,7 @@ class PostCreator {
     *                        end of the post
     * @param  {String} description The HTML description of the article. Will be  
     *                        changed to plain text and truncated to fit maxDescriptoinLength
-    * @return {Promise<{postText: String, imagePath: String}>} The text to include in the post 
+    * @return {Promise<{postText: String, imagePath: String}>} The text of the post 
     *                        and the local path to the image downloaded from @description if 
     *                        @description contains a valid <img> element
     */
@@ -98,13 +98,20 @@ class PostCreator {
     /**
     * Returns the value of the "src" attribute of an <img> element
     * @param  {String} html an HTML string
-    * @return {String} The "src" attribute
+    * @return {String} Value of the "src" attribute
     */ 
     extractSrc = (html) => {
         var $ = cheerio.load(html);
         return $("img").attr("src");
     }
 
+    /**
+    * Finds the game name from the article's URL
+    * @param  {String} link Link to the article
+    * @return {String} The game name if the link contains the game id 
+    *                   (if it contains "/app/" in the path),
+    *                   otherwise returns an empty string
+    */
     findGameName = async (link) => {
         try {
             var gameId = link.split("/app/")[1].split("/view/")[0];
@@ -119,6 +126,11 @@ class PostCreator {
         }
     }
 
+    /**
+    * Downloads an image from the given URL, compresses it and saves it to disk in the running folder
+    * @param  {String} path Link to the image that will be downloaded
+    * @return {String} Name of the downloaded image file
+    */
     createImage = async (path) => {
         var localName = "tempimage" + uuidv4() + ".jpg";
         console.log("Local image name:" + localName);
