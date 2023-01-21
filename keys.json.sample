@@ -1,7 +1,5 @@
 {
     "access_token": "",
-    "client_secret": "",
-    "client_key": "",
     "api_url": "https://example.com/api/v1/",
     "timeout_ms": 60000
 }
